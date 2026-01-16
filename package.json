@@ -1,0 +1,17 @@
+{
+  "name": "copy-markdown-link",
+  "version": "1.0.0",
+  "description": "Chrome extension to copy the current page as a Markdown link [title](URL) to clipboard.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.1.33",
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-html": "^3.2.2"
+  }
+}
