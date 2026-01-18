@@ -1,1 +1,1 @@
-console.log('Background service worker loaded');
+console.log("Background service worker loaded");
