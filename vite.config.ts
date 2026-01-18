@@ -24,6 +24,12 @@ export default defineConfig({
       },
     },
   },
+  resolve: {
+    // 路径别名配置
+    alias: {
+      "@popup": resolve(__dirname, "src/popup/modules"), // @ 代表 src 目录，便于导入
+    },
+  },
   // 插件配置
   plugins: [
     createHtmlPlugin({

@@ -23,7 +23,9 @@ const DEFAULTS = {
  * @returns {Promise<string>} 当前保存的链接格式，如果不存在则返回默认格式
  */
 export async function getLinkFormat(): Promise<LinkFormatKey> {
-  const formatKey = await chrome.storage.local.get(KEYS.format);
+  const { [KEYS.format]: formatKey } = await chrome.storage.local.get(
+    KEYS.format,
+  );
   return isLinkFormatKey(formatKey) ? formatKey : DEFAULT_FORMAT;
 }
 
@@ -47,8 +49,8 @@ export interface PrefixSuffix {
  * @returns {Promise<PrefixSuffix>} 当前保存的前缀和后缀，如果不存在则返回默认值
  */
 export async function getPrefixSuffix(): Promise<PrefixSuffix> {
-  const res = await chrome.storage.local.get([KEYS.prefix, KEYS.suffix]);
-  const [prefix, suffix] = [res[KEYS.prefix], res[KEYS.suffix]];
+  const { [KEYS.prefix]: prefix, [KEYS.suffix]: suffix } =
+    await chrome.storage.local.get([KEYS.prefix, KEYS.suffix]);
   return {
     prefix: typeof prefix === "string" ? prefix : DEFAULTS.prefix,
     suffix: typeof suffix === "string" ? suffix : DEFAULTS.suffix,

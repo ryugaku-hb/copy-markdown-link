@@ -1,9 +1,16 @@
-import { linkFormats, LinkFormatKey, isLinkFormatKey } from "./formatter";
-import { dom, showStatus, showPreview } from "./dom";
-import { setLinkFormat, setPrefixSuffix } from "./storage";
-import { getCurrentTabInfo } from "./tab";
-import { copyText } from "./copy";
-import { initUI } from "./initUI";
+import {
+  linkFormats,
+  LinkFormatKey,
+  isLinkFormatKey,
+  dom,
+  showStatus,
+  showPreview,
+  setLinkFormat,
+  setPrefixSuffix,
+  getCurrentTabInfo,
+  copyText,
+  initUI,
+} from "@popup";
 
 await initUI();
 
@@ -47,7 +54,7 @@ dom.copyBtn.addEventListener("click", async () => {
     showPreview(text);
   } catch (err: any) {
     // 捕获任何错误
-    showStatus("✗ 复制失败，请重试！", "error");
+    showStatus("复制失败，请重试！", "error");
     showPreview(err.message);
   }
 });
