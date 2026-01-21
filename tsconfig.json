@@ -9,7 +9,7 @@
     /* 路径别名 */
     "baseUrl": ".", // 解析非相对模块的基础目录
     "paths": {
-      "@popup": ["src/popup/modules"] // 路径别名
+      "@popup/*": ["src/popup/modules/*"] // 路径别名
     },
 
     /* 类型检查 */
