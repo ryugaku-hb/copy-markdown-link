@@ -1,8 +1,8 @@
-import { storage } from "./storage";
-import { dom } from "./dom";
-import { linkFormats, isLinkFormat } from "./linkFormat";
-import { getCurrentTabInfo } from "./tab";
 import { copyText } from "./copy";
+import { dom } from "./dom";
+import { isLinkFormat, linkFormats } from "./linkFormat";
+import { storage } from "./storage";
+import { getCurrentTabInfo } from "./tab";
 
 /**
  * Popup 管理器

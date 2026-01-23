@@ -1,7 +1,7 @@
 import {
-  LinkFormatType,
   DEFAULT_LINK_FORMAT,
   isLinkFormat,
+  LinkFormatType,
 } from "./linkFormat";
 
 const KEYS = {
