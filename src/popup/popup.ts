@@ -1,14 +1,14 @@
 /**
  * Popup 入口文件 \
- * 初始化 Popup 管理器并启动应用
+ * 只负责创建应用实例并启动
  */
 
-import { PopupManager } from "@popup/popupManager";
+import { PopupApp } from "@/popup/ui/popupApp";
 
 try {
-  // 创建 Popup 管理器实例并启动
-  const popupManager = new PopupManager();
-  popupManager.init();
+  const popupApp = new PopupApp();
+  // init 内部已捕获并展示错误，这里只需触发
+  void popupApp.init();
 } catch (error: unknown) {
   console.error("Popup 启动失败", error);
 }

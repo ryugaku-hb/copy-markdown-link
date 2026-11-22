@@ -38,10 +38,10 @@
 
     /* ======================== 路径映射 ======================== */
     "paths": {
-      "@popup/*": ["./src/popup/modules/*"]
-      // 路径别名配置，避免 ../../ 的深层引用
-      // 示例：import { utils } from '@popup/utils'
-      // 实际指向：./src/popup/modules/utils
+      "@/*": ["./src/*"]
+      // @ 别名指向 src 目录，与 vite.config.ts 的 resolve.alias 保持一致
+      // 示例：import { storage } from "@/services/storage"
+      // 实际指向：./src/services/storage
     },
 
     /* ======================== 严格类型检查 ======================== */

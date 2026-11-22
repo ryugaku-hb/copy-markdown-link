@@ -1,36 +1,21 @@
 /**
- * 标签页信息获取模块 \
- * 依赖 activeTab 权限直接读取当前标签页的标题和 URL
+ * 当前页面服务 \
+ * 依赖 activeTab 权限直接读取活动标签页的标题和 URL
  */
 
-/**
- * 标签页信息接口
- */
-interface TabInfo {
-  /** 页面标题（已规整为单行文本） */
-  title: string;
-  /** 页面 URL */
-  url: string;
-}
+import type { LinkData } from "@/domain/linkFormat";
 
 /**
  * 获取当前活动标签页的标题和 URL
  *
  * 用户点击扩展图标时，activeTab 权限会授予当前标签页临时的 host 权限，
  * 此时 `chrome.tabs.query` 返回的 `tab.title` / `tab.url` 对本标签页可见。
- * 因此不需要注入脚本，也就不再需要 `scripting` 权限（权限面更小、少一次 IPC）。
+ * 因此不需要注入脚本，也就不需要 `scripting` 权限（权限面更小、少一次 IPC）。
  *
- * @returns 包含标题和 URL 的对象
+ * @returns 规整后的标题与页面 URL
  * @throws {Error} 当没有活动标签页，或页面受保护导致 URL 不可读时抛出
- * @example
- * try {
- *   const info = await getCurrentTabInfo();
- *   console.log(info.title);
- * } catch (err) {
- *   console.error("获取失败", err);
- * }
  */
-export async function getCurrentTabInfo(): Promise<TabInfo> {
+export async function getCurrentPageInfo(): Promise<LinkData> {
   // 查询当前窗口中处于激活状态的标签页
   const [tab] = await chrome.tabs.query({
     active: true, // 标签页在它所在的窗口中是否处于激活状态

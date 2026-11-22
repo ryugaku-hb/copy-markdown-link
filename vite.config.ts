@@ -33,7 +33,7 @@ export default defineConfig({
      * 开发环境建议启用以便调试
      */
     sourcemap: false,
-    
+
     /**
      * Rollup 构建选项
      * 配置多入口文件和输出文件名规则
@@ -85,11 +85,11 @@ export default defineConfig({
      */
     alias: {
       /**
-       * @popup 别名
-       * 映射到 src/popup/modules 目录
-       * 便于在项目中直接使用 @popup/xxx 的方式引用弹窗模块
+       * @ 别名
+       * 映射到 src 目录，跨层引用统一写成 `@/domain/xxx`、`@/services/xxx`
+       * 注意：TypeScript 侧由 tsconfig.json 的 paths 同步维护
        */
-      "@popup": resolve(__dirname, "src/popup/modules"),
+      "@": resolve(__dirname, "src"),
     },
   },
 

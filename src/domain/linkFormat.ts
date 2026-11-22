@@ -1,10 +1,10 @@
 /**
- * 链接格式管理模块 \
- * 定义和管理各种链接格式的生成规则
+ * 链接格式领域模块 \
+ * 纯逻辑：类型定义、转义规则与格式注册表，不依赖 DOM 或 chrome API，可直接单测
  */
 
 /**
- * 可用的链接格式类型枚举
+ * 可用的链接格式类型
  */
 export type LinkFormatType =
   | "markdown"
@@ -14,29 +14,14 @@ export type LinkFormatType =
   | "html";
 
 /**
- * 默认链接格式配置
+ * 默认链接格式
  */
 export const DEFAULT_LINK_FORMAT: LinkFormatType = "markdown";
 
 /**
- * 判断一个值是否为合法的 `LinkFormatType`
- * 使用类型守卫 (Type Guard) 确保类型安全
- *
- * @param value - 要验证的值
- * @returns 如果是有效的链接格式类型则返回 `true`，否则返回 `false`
+ * 生成链接所需的页面信息
  */
-export function isLinkFormat(value: unknown): value is LinkFormatType {
-  return (
-    typeof value === "string" &&
-    ["markdown", "markdownTitle", "emptyText", "plain", "html"].includes(value)
-  );
-}
-
-/**
- * 链接数据接口 \
- * 定义生成链接所需的基本信息
- */
-interface LinkData {
+export interface LinkData {
   /** 页面标题 */
   title: string;
   /** 页面 URL */
@@ -54,7 +39,7 @@ export interface LinkFormat {
   label: string;
 
   /**
-   * 根据页面信息生成最终链接文本的函数
+   * 根据页面信息生成最终链接文本
    * @param data - 包含标题和 URL 的数据对象
    * @returns 格式化后的链接文本
    */
@@ -109,7 +94,7 @@ function escapeHtml(text: string): string {
 /**
  * 链接格式注册表 \
  * 定义所有可用的链接格式及其生成规则；所有 generate 都会对标题和 URL 转义，
- * 保证任意页面标题都能产出可用链接
+ * 保证任意页面标题都能产出可用链接。新增格式时只需在这里加一项。
  */
 export const linkFormats: Record<LinkFormatType, LinkFormat> = {
   /**
@@ -155,3 +140,17 @@ export const linkFormats: Record<LinkFormatType, LinkFormat> = {
       `<a href="${escapeHtml(url)}" title="${escapeHtml(title)}">${escapeHtml(title)}</a>`,
   },
 };
+
+/**
+ * 判断一个值是否为合法的 `LinkFormatType` \
+ * 直接以注册表的键为准：新增格式时这里无需同步修改，避免两处清单漂移
+ *
+ * @param value - 要验证的值
+ * @returns 合法格式返回 `true`，否则返回 `false`
+ */
+export function isLinkFormat(value: unknown): value is LinkFormatType {
+  return (
+    typeof value === "string" &&
+    Object.prototype.hasOwnProperty.call(linkFormats, value)
+  );
+}

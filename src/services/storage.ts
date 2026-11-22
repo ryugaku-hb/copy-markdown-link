@@ -1,32 +1,10 @@
 /**
- * 存储管理模块 \
+ * 存储服务 \
  * 一次性读写整份设置，减少 chrome.storage 往返次数
  */
 
-import {
-  DEFAULT_LINK_FORMAT,
-  isLinkFormat,
-  LinkFormatType,
-} from "./linkFormat";
-
-/**
- * 设置项结构
- */
-export interface Settings {
-  /** 链接前缀 */
-  prefix: string;
-  /** 链接后缀 */
-  suffix: string;
-  /** 链接格式 */
-  linkFormat: LinkFormatType;
-}
-
-/** 默认设置，同时用作 `chrome.storage.local.get` 的默认值 */
-const DEFAULT_SETTINGS: Settings = {
-  prefix: "",
-  suffix: "",
-  linkFormat: DEFAULT_LINK_FORMAT,
-};
+import { DEFAULT_LINK_FORMAT, isLinkFormat } from "@/domain/linkFormat";
+import { DEFAULT_SETTINGS, Settings } from "@/domain/settings";
 
 /**
  * 存储管理器 \

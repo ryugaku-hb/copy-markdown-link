@@ -68,25 +68,32 @@ npm run format
 copy-markdown-link/
 ├── src/
 │   ├── background.ts            # MV3 service worker（当前仅占位）
+│   ├── domain/                  # 纯逻辑层：不碰 DOM / chrome API，可直接单测
+│   │   ├── linkFormat.ts        # 链接格式注册表、转义规则、类型守卫
+│   │   └── settings.ts          # 设置结构与默认值
+│   ├── services/                # 浏览器能力层：对 chrome API 做薄封装
+│   │   ├── clipboard.ts         # Clipboard API（失败抛错，不吞异常）
+│   │   ├── currentPage.ts       # 读取活动标签页 title / url
+│   │   └── storage.ts           # chrome.storage.local 一次性读写
 │   ├── popup/
 │   │   ├── popup.html           # 弹窗页面
-│   │   ├── popup.ts             # 弹窗入口，创建 PopupManager
+│   │   ├── popup.ts             # 弹窗入口，创建并启动 PopupApp
 │   │   ├── popup.css            # 引入 Tailwind
-│   │   └── modules/
-│   │       ├── popupManager.ts  # 初始化、事件绑定、复制主流程
-│   │       ├── copy.ts          # Clipboard API 封装
-│   │       ├── tab.ts           # 获取当前标签页 title / url
-│   │       ├── storage.ts       # chrome.storage.local 读写封装
-│   │       ├── linkFormat.ts    # 链接格式注册表 + 类型守卫
-│   │       └── dom.ts           # DOM 缓存与状态/预览显示
+│   │   └── ui/                  # 界面层：DOM 与交互
+│   │       ├── elements.ts      # 元素查询与缓存
+│   │       ├── feedback.ts      # 状态提示 / 预览的显示与隐藏
+│   │       ├── settingsForm.ts  # 表单渲染与回读
+│   │       └── popupApp.ts      # 启动流程与复制主流程编排
 │   └── public/
 │       ├── manifest.json        # 扩展清单（版本号在这里）
 │       └── icons/               # 16 / 32 / 48 / 128 px 图标
 ├── dist/                        # 构建产物（已 gitignore）
-├── vite.config.ts               # 双入口（popup + background）、路径别名
-├── tsconfig.json                # strict 模式、@popup/* 路径映射
+├── vite.config.ts               # 双入口（popup + background）、@ 路径别名
+├── tsconfig.json                # strict 模式、@/* 路径映射
 └── package.json
 ```
+
+分层约定：`domain` 可被任意层引用；`services` 只依赖 `domain`；`popup/ui` 依赖上面两层，并独占 DOM 操作。跨层引用统一用 `@/...`（如 `@/services/storage`），同层内用相对路径。
 
 ## 6. 权限说明
 
