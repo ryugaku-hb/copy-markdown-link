@@ -35,6 +35,10 @@ export function getEl<T extends HTMLElement = HTMLElement>(id: string): T {
  * 模块加载时一次性查询并缓存，后续读写都走这份引用。
  */
 export const elements = {
+  /** 右上角语言按钮（🌐）。 */
+  localeBtn: getEl<HTMLButtonElement>("localeBtn"),
+  /** 语言弹出菜单容器。 */
+  localeMenu: getEl<HTMLDivElement>("localeMenu"),
   /** 链接格式下拉框。 */
   formatSelect: getEl<HTMLSelectElement>("format"),
   /** 前缀输入框。 */

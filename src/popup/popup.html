@@ -7,23 +7,56 @@
     <link rel="stylesheet" href="./popup.css" />
   </head>
 
-  <body class="w-72 bg-gray-100 p-3">
+  <body class="w-80 bg-gray-100 p-3">
     <!-- 主卡片容器 -->
     <div
       class="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
     >
-      <!-- 标题区域 -->
+      <!-- 标题区域：标题行右侧放地球图标，副标题独占整行避免被挤断 -->
       <div class="space-y-0.5 px-0.5">
-        <h1 class="text-sm font-semibold tracking-tight text-gray-900">
-          Copy Markdown Link
-        </h1>
-        <p class="text-xs text-gray-500">一键复制当前页面的 Markdown 链接</p>
+        <div class="flex items-center justify-between gap-2">
+          <h1
+            class="text-sm font-semibold tracking-tight text-gray-900"
+            data-i18n="appName"
+          >
+            复制 Markdown 链接
+          </h1>
+
+          <div class="relative shrink-0">
+            <button
+              id="localeBtn"
+              type="button"
+              aria-controls="localeMenu"
+              aria-expanded="false"
+              data-i18n-aria-label="languageLabel"
+              class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-sm leading-none transition hover:bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            >
+              <span aria-hidden="true">🌐</span>
+            </button>
+
+            <!-- 语言菜单：选项由 settingsForm.renderLocaleMenu 生成 -->
+            <div
+              id="localeMenu"
+              role="radiogroup"
+              data-i18n-aria-label="languageLabel"
+              class="absolute top-full right-0 z-10 mt-1 hidden w-32 rounded-md border border-gray-200 bg-white p-1 shadow-md"
+            ></div>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-500" data-i18n="subtitle">
+          一键复制当前页面的 Markdown 链接
+        </p>
       </div>
 
       <!-- 链接格式选择区域 -->
       <div class="space-y-1">
         <!-- 下拉框说明文本 -->
-        <label for="format" class="mb-1.5 block text-xs text-gray-500">
+        <label
+          for="format"
+          class="mb-1.5 block text-xs text-gray-500"
+          data-i18n="formatLabel"
+        >
           链接格式
         </label>
 
@@ -36,7 +69,10 @@
 
       <!-- 链接前缀 -->
       <div class="space-y-1">
-        <label for="prefix" class="block text-xs text-gray-500"
+        <label
+          for="prefix"
+          class="block text-xs text-gray-500"
+          data-i18n="prefixLabel"
           >前缀（可选）</label
         >
         <input
@@ -44,13 +80,17 @@
           type="text"
           class="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           placeholder="例如：★ "
+          data-i18n-placeholder="prefixPlaceholder"
           autocomplete="off"
         />
       </div>
 
       <!-- 链接后缀 -->
       <div class="space-y-1">
-        <label for="suffix" class="block text-xs text-gray-500"
+        <label
+          for="suffix"
+          class="block text-xs text-gray-500"
+          data-i18n="suffixLabel"
           >后缀（可选）</label
         >
         <input
@@ -58,6 +98,7 @@
           type="text"
           class="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           placeholder="例如： 🔗"
+          data-i18n-placeholder="suffixPlaceholder"
           autocomplete="off"
         />
       </div>
@@ -65,6 +106,7 @@
       <!-- 复制按钮 -->
       <button
         id="copyBtn"
+        data-i18n="copyButton"
         class="w-full rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none active:scale-[0.98] active:bg-emerald-800"
       >
         复制链接

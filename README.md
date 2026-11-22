@@ -16,7 +16,8 @@
   | HTML                      | `<a href="https://example.com" title="标题">标题</a>` |
 
 - **前缀 / 后缀**：给结果加固定装饰，例如前缀 `★ `、后缀 ` 🔗`
-- **设置本地保存**：格式、前缀、后缀存在 `chrome.storage.local`，不上传任何数据
+- **五种界面语言**：简体中文（默认）、繁體中文、English、日本語、한국어。点弹窗右上角的地球图标（🌐）弹出语言菜单，选择后立即生效
+- **设置本地保存**：格式、前缀、后缀、界面语言存在 `chrome.storage.local`，不上传任何数据
 - **权限最小化**：只申请 `activeTab`，不申请全站读取权限
 
 ## 2. 环境要求
@@ -69,21 +70,24 @@ copy-markdown-link/
 ├── src/
 │   ├── background.ts            # MV3 service worker（当前仅占位）
 │   ├── domain/                  # 纯逻辑层：不碰 DOM / chrome API，可直接单测
+│   │   ├── i18n.ts              # 五语言文案表、语言守卫与占位符插值
+│   │   ├── errors.ts            # AppError 错误码与按语言翻译
 │   │   ├── linkFormat.ts        # 链接格式注册表、转义规则、类型守卫
 │   │   └── settings.ts          # 设置结构与默认值
 │   ├── services/                # 浏览器能力层：对 chrome API 做薄封装
-│   │   ├── clipboard.ts         # Clipboard API（失败抛错，不吞异常）
+│   │   ├── clipboard.ts         # Clipboard API（失败抛 AppError，不吞异常）
 │   │   ├── currentPage.ts       # 读取活动标签页 title / url
-│   │   └── storage.ts           # chrome.storage.local 一次性读写
+│   │   └── storage.ts           # chrome.storage.local 一次性读写（含语言校验）
 │   ├── popup/
-│   │   ├── popup.html           # 弹窗页面
+│   │   ├── popup.html           # 弹窗页面（静态文案用 data-i18n 标记）
 │   │   ├── popup.ts             # 弹窗入口，创建并启动 PopupApp
 │   │   ├── popup.css            # 引入 Tailwind
 │   │   └── ui/                  # 界面层：DOM 与交互
 │   │       ├── elements.ts      # 元素查询与缓存
+│   │       ├── localize.ts      # 把文案表写到 data-i18n / placeholder / aria-label
 │   │       ├── feedback.ts      # 状态提示 / 预览的显示与隐藏
-│   │       ├── settingsForm.ts  # 表单渲染与回读
-│   │       └── popupApp.ts      # 启动流程与复制主流程编排
+│   │       ├── settingsForm.ts  # 语言与格式下拉框、前后缀表单的渲染与回读
+│   │       └── popupApp.ts      # 启动、切换语言与复制主流程编排
 │   └── public/
 │       ├── manifest.json        # 扩展清单（版本号在这里）
 │       └── icons/               # 16 / 32 / 48 / 128 px 图标
@@ -95,22 +99,39 @@ copy-markdown-link/
 
 分层约定：`domain` 可被任意层引用；`services` 只依赖 `domain`；`popup/ui` 依赖上面两层，并独占 DOM 操作。跨层引用统一用 `@/...`（如 `@/services/storage`），同层内用相对路径。
 
-## 6. 权限说明
+## 6. 界面语言
+
+| 语言     | 代码    | 下拉框显示 |
+| -------- | ------- | ---------- |
+| 简体中文 | `zh-CN` | 简体中文   |
+| 繁体中文 | `zh-TW` | 繁體中文   |
+| 英语     | `en`    | English    |
+| 日语     | `ja`    | 日本語     |
+| 韩语     | `ko`    | 한국어     |
+
+- **默认语言**：简体中文。首次安装、或存储里的值非法时都回退到 `zh-CN`
+- **切换位置**：弹窗标题行右侧的地球图标（🌐）。点击后在小面板里列出五种语言（原生单选框，支持方向键切换），选中即应用并收起面板；点击面板外部或按 Esc 也会收起。图标只有 24px，且与标题同行，不会挤压副标题或主流程的布局
+- **持久化**：切换语言后立即写入 `chrome.storage.local` 的 `locale` 字段，下次打开弹窗按保存值渲染；前后缀仍保持「点击复制时才保存」的懒保存策略
+- **实现方式**：`domain/i18n.ts` 维护五份文案表，HTML 用 `data-i18n` / `data-i18n-placeholder` / `data-i18n-aria-label` 标记，`ui/localize.ts` 负责写回 DOM；服务层抛 `AppError` 错误码，由 `localizeError()` 按当前语言翻译，因此错误提示也会跟随语言变化
+- **扩展名称与描述**（`chrome://extensions` 列表里显示的那两行）暂未本地化，那部分需要 Chrome 原生的 `_locales` 机制，与弹窗内的语言选择是两套体系
+
+## 7. 权限说明
 
 | 权限             | 用途                                                         |
 | ---------------- | ------------------------------------------------------------ |
 | `activeTab`      | 用户点击扩展时临时获得当前标签页的访问权，用于读取标题和 URL |
 | `clipboardWrite` | 向系统剪贴板写入文本                                         |
-| `storage`        | 保存格式、前缀、后缀设置                                     |
+| `storage`        | 保存格式、前缀、后缀与界面语言设置                           |
 
 扩展不发起任何网络请求，也没有统计上报；所有设置只存在本机浏览器中。
 
-## 7. 已知限制
+## 8. 已知限制
 
 - `chrome://`、`edge://`、`about:`、扩展商店等受保护页面无法读取内容，会提示复制失败
 - 版本号需要同时维护 `package.json` 和 `src/public/manifest.json`
-- 设置是在点击「复制链接」时写入存储的；改完设置直接关闭弹窗不会保存
+- 前缀 / 后缀是在点击「复制链接」时写入存储的，改完直接关闭弹窗不会保存；界面语言则是切换即保存
+- 弹窗打开时会先渲染一份简体中文静态文本，脚本执行后立刻替换为已保存语言，非中文用户可能看到极短闪动
 
-## 8. License
+## 9. License
 
 [MIT](./LICENSE)

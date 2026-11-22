@@ -5,6 +5,7 @@
  * 不注入任何脚本，因此不需要 `scripting` 权限。
  */
 
+import { AppError } from "@/domain/errors";
 import type { LinkData } from "@/domain/linkFormat";
 
 /**
@@ -14,7 +15,7 @@ import type { LinkData } from "@/domain/linkFormat";
  * 此时 `chrome.tabs.query` 返回的 `tab.title` 与 `tab.url` 对本标签页可见。
  *
  * @returns 规整后的标题与页面 URL。
- * @throws {Error} 没有活动标签页，或页面受保护导致 URL 不可读时抛出。
+ * @throws {AppError} 没有活动标签页，或页面受保护导致 URL 不可读时抛出。
  * @example
  * const { title, url } = await getCurrentPageInfo();
  * // => { title: "Example Domain", url: "https://example.com/" }
@@ -29,7 +30,10 @@ export async function getCurrentPageInfo(): Promise<LinkData> {
   // 受保护页面（chrome://、扩展商店、PDF 查看器等）不会暴露 url，
   // activeTab 授权也不覆盖这些页面。
   if (!tab?.url) {
-    throw new Error("无法读取当前标签页，可能是受保护的页面");
+    throw new AppError(
+      "protected_page",
+      "无法读取当前标签页，可能是受保护的页面",
+    );
   }
 
   return {

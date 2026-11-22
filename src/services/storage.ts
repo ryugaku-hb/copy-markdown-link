@@ -5,6 +5,8 @@
  * 读取时做校验，避免旧版本写入的非法值污染界面。
  */
 
+import { AppError } from "@/domain/errors";
+import { DEFAULT_LOCALE, isLocale } from "@/domain/i18n";
 import { DEFAULT_LINK_FORMAT, isLinkFormat } from "@/domain/linkFormat";
 import { DEFAULT_SETTINGS, Settings } from "@/domain/settings";
 
@@ -21,7 +23,7 @@ export const storage = {
    * @returns 校验后的完整设置；读取失败时回退为默认设置。
    * @example
    * const settings = await storage.getSettings();
-   * // => { prefix: "", suffix: "", linkFormat: "markdown" }
+   * // => { prefix: "", suffix: "", linkFormat: "markdown", locale: "zh-CN" }
    */
   async getSettings(): Promise<Settings> {
     try {
@@ -30,6 +32,7 @@ export const storage = {
         prefix: DEFAULT_SETTINGS.prefix,
         suffix: DEFAULT_SETTINGS.suffix,
         linkFormat: DEFAULT_SETTINGS.linkFormat,
+        locale: DEFAULT_SETTINGS.locale,
       });
 
       // 存储值可能来自旧版本或被手动改动，逐项校验后再返回。
@@ -45,6 +48,7 @@ export const storage = {
         linkFormat: isLinkFormat(stored.linkFormat)
           ? stored.linkFormat
           : DEFAULT_LINK_FORMAT,
+        locale: isLocale(stored.locale) ? stored.locale : DEFAULT_LOCALE,
       };
     } catch (error: unknown) {
       console.error("读取设置失败，使用默认设置:", error);
@@ -55,18 +59,27 @@ export const storage = {
   /**
    * 一次写入全部设置。
    *
-   * @param settings - 完整的设置对象，包含前缀、后缀与链接格式。
+   * @param settings - 完整的设置对象，包含前缀、后缀、链接格式与界面语言。
    * @returns 写入完成后 resolve，无返回值。
-   * @throws {Error} 写入失败时抛出，错误信息包含原始原因，调用方负责提示用户。
+   * @throws {AppError} 写入失败时抛出，错误信息包含原始原因，调用方负责提示用户。
    * @example
-   * await storage.saveSettings({ prefix: "★ ", suffix: "", linkFormat: "markdown" });
+   * await storage.saveSettings({
+   *   prefix: "★ ",
+   *   suffix: "",
+   *   linkFormat: "markdown",
+   *   locale: "ja",
+   * });
    */
   async saveSettings(settings: Settings): Promise<void> {
     try {
       await chrome.storage.local.set(settings);
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : String(error);
-      throw new Error(`保存设置失败：${detail}`);
+      throw new AppError(
+        "save_settings_failed",
+        `保存设置失败：${detail}`,
+        detail,
+      );
     }
   },
 };

@@ -5,6 +5,7 @@
  * 不包含任何读写逻辑。
  */
 
+import { DEFAULT_LOCALE, Locale } from "./i18n";
 import { DEFAULT_LINK_FORMAT, LinkFormatType } from "./linkFormat";
 
 /**
@@ -17,6 +18,8 @@ export interface Settings {
   suffix: string;
   /** 链接格式，决定最终结果的样式。 */
   linkFormat: LinkFormatType;
+  /** 界面语言，决定弹窗中所有文案的语言。 */
+  locale: Locale;
 }
 
 /** 默认设置，同时用作 `chrome.storage.local.get` 的默认值。 */
@@ -24,4 +27,5 @@ export const DEFAULT_SETTINGS: Settings = {
   prefix: "",
   suffix: "",
   linkFormat: DEFAULT_LINK_FORMAT,
+  locale: DEFAULT_LOCALE,
 };
