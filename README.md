@@ -74,6 +74,19 @@ npm run format
 
 `npm run package` 会先构建，再用 `scripts/package.mjs` 把 `dist/` 打成 `release/copy-markdown-link-<version>.zip`。压缩包内 `manifest.json` 位于根目录（Web Store 的要求），版本号取自 `package.json`。`release/` 已加入 `.gitignore`。
 
+### 发布版本（GitHub Release）
+
+发布由 `.github/workflows/release.yml` 自动完成，只需推一个 `v*` 标签：
+
+```bash
+npm version 1.1.4 --no-git-tag-version   # 改版本号
+git commit -am "chore: 版本号升至 1.1.4"
+git tag v1.1.4
+git push && git push origin v1.1.4       # 推标签即触发发布
+```
+
+工作流会校验「tag 名」与 `package.json` 的 version 是否一致（不一致直接失败），再跑类型检查和测试，最后构建、打包并把 zip 附到 Release，说明由 GitHub 按提交自动生成。发布记录见仓库的 **Releases** 页面。
+
 ### 测试范围
 
 `tests/` 覆盖了 `domain` 与 `services` 两层，浏览器能力用 `vi.stubGlobal` 打桩：
