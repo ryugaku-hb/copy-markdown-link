@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          # 需要完整历史与所有标签，才能算出上一个版本到本次的提交区间。
+          fetch-depth: 0
 
       - name: 安装 Node
         uses: actions/setup-node@v4
@@ -49,11 +52,15 @@ jobs:
       - name: 构建并打包
         run: npm run package
 
-      # 创建 Release 并附上 zip；说明由 GitHub 按提交自动生成。
+      # 按提交前缀（feat / fix / docs ...）归类生成说明，写成文件供发布步骤读取。
+      - name: 生成分类发布说明
+        run: node scripts/release-notes.mjs > RELEASE_NOTES.md
+
+      # 创建 Release 并附上 zip；说明取自上一步生成的 Markdown 文件。
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: release/*.zip
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false

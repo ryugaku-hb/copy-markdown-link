@@ -85,7 +85,7 @@ git tag v1.1.4
 git push && git push origin v1.1.4       # 推标签即触发发布
 ```
 
-工作流会校验「tag 名」与 `package.json` 的 version 是否一致（不一致直接失败），再跑类型检查和测试，最后构建、打包并把 zip 附到 Release，说明由 GitHub 按提交自动生成。发布记录见仓库的 **Releases** 页面。
+工作流会校验「tag 名」与 `package.json` 的 version 是否一致（不一致直接失败），再跑类型检查和测试，最后构建、打包并把 zip 附到 Release。说明由 `scripts/release-notes.mjs` 按提交前缀归类生成：`feat:` → 新功能、`fix:` → 修复、`docs:` → 文档，依次类推，末尾附上一版本到本版本的完整对比链接。发布记录见仓库的 **Releases** 页面。
 
 ### 测试范围
 
