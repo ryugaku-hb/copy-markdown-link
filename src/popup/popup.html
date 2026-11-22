@@ -83,22 +83,24 @@
         />
       </div>
 
-      <!-- 复制按钮 -->
-      <button id="copyBtn" data-i18n="copyButton" class="copy-btn">
-        复制链接
-      </button>
+      <!-- 复制按钮、状态提示与预览：三者放在同一组，用统一的 8px 间距，避免提示上下边距一大一小 -->
+      <div class="copy-group">
+        <button id="copyBtn" data-i18n="copyButton" class="copy-btn">
+          复制链接
+        </button>
 
-      <!-- 状态提示：role=status + aria-live 让读屏软件播报复制结果 -->
-      <div
-        id="status"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        class="status hidden"
-      ></div>
+        <!-- 状态提示：role=status + aria-live 让读屏软件播报复制结果 -->
+        <div
+          id="status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          class="status hidden"
+        ></div>
 
-      <!-- 复制内容预览 -->
-      <div id="preview" class="preview hidden"></div>
+        <!-- 复制内容预览 -->
+        <div id="preview" class="preview hidden"></div>
+      </div>
     </div>
 
     <script type="module" src="./popup.ts"></script>

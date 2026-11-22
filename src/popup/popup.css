@@ -234,11 +234,38 @@ select {
   box-shadow: 0 0 0 1px var(--color-accent);
 }
 
+/*
+ * 下拉框箭头。
+ *
+ * 原生 select 的箭头紧贴右边缘且无法调整，这里关掉原生外观，
+ * 用背景 SVG 画一个 12px 的箭头并放在右侧 12px 处，与边框留出呼吸感；
+ * 同时补上右侧内边距，避免较长的格式名压到箭头下面。
+ */
 select.field-control {
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 12px;
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
 }
 
 /* ============================ 按钮 ============================ */
+
+/*
+ * 按钮、状态提示与预览的紧凑组合。
+ *
+ * 组内统一 8px 间距，提示的上下边距因此一致（8px / 8px）；
+ * 与上方表单区块之间仍由卡片的 16px gap 拉开层次。
+ * 提示与预览隐藏时组内只剩按钮，间距不会产生空白，默认态与原来一致。
+ */
+.copy-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 .copy-btn {
   width: 100%;
@@ -293,7 +320,6 @@ select.field-control {
 }
 
 .preview {
-  margin-top: 8px;
   padding: 6px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
