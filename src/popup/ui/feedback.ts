@@ -10,11 +10,11 @@ import { elements } from "./elements";
 /** 状态类型，对应 `STATUS_COLORS` 的键名。 */
 type StatusType = keyof typeof STATUS_COLORS;
 
-/** 状态颜色映射，用于切换 Tailwind CSS 类名。 */
+/** 状态颜色映射，对应 `popup.css` 里的语义类名。 */
 const STATUS_COLORS = {
-  success: "text-green-600",
-  error: "text-red-500",
-  warning: "text-yellow-500",
+  success: "status-success",
+  error: "status-error",
+  warning: "status-warning",
 } as const;
 
 /** 状态消息自动隐藏的定时器；连续调用时先清掉旧定时器，避免新消息被过早隐藏。 */

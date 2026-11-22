@@ -32,18 +32,14 @@ function renderLocaleMenuItems(): void {
     const active = code === currentLocale;
 
     const item = document.createElement("label");
-    item.className = [
-      "flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs",
-      active ? "font-medium text-gray-900" : "text-gray-600",
-      "hover:bg-gray-100",
-    ].join(" ");
+    item.className = active ? "locale-item locale-item--active" : "locale-item";
 
     const radio = document.createElement("input");
     radio.type = "radio";
     radio.name = "locale";
     radio.value = code;
     radio.checked = active;
-    radio.className = "accent-emerald-600";
+    radio.className = "locale-radio";
 
     const text = document.createElement("span");
     text.textContent = name;

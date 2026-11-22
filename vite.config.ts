@@ -1,4 +1,3 @@
-import tailwindcss from "@tailwindcss/vite"; // 插件，用于集成 Tailwind CSS。
 import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "path";
 import { defineConfig, type Plugin } from "vite";
@@ -179,10 +178,6 @@ export default defineConfig({
     createHtmlPlugin({
       minify: true,
     }),
-    /**
-     * Tailwind CSS 插件：提供实用优先的样式类。
-     */
-    tailwindcss(),
     /**
      * 版本注入插件：让 manifest 的 version 与 package.json 保持一致。
      */

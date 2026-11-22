@@ -1,1 +1,316 @@
-@import "tailwindcss";
+/*
+ * 弹窗样式：纯原生 CSS，不再依赖 Tailwind。
+ *
+ * 组织顺序：设计变量 → 基础重置 → 布局与组件 → 状态类。
+ * 颜色、圆角、间距都收敛到 `:root` 的变量里，将来加暗色模式只需覆盖变量。
+ */
+
+:root {
+  /* 尺寸与间距 */
+  --popup-width: 320px;
+  --gap-card: 16px;
+  --gap-field: 4px;
+
+  /* 颜色 */
+  --color-page: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-border-hover: #9ca3af;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-body: #374151;
+  --color-accent: #3b82f6;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-active: #065f46;
+  --color-success: #16a34a;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* 圆角与阴影 */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-xl: 12px;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-menu:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* ============================ 基础重置 ============================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Chrome 弹窗按内容宽度渲染，这里固定 320px 与设计稿一致。 */
+  width: var(--popup-width);
+  padding: 12px;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button,
+input,
+select {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* ============================ 卡片与页头 ============================ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 2px;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ============================ 语言选择 ============================ */
+
+.locale-picker {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.locale-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.locale-btn:hover {
+  background: var(--color-page);
+}
+
+.locale-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.locale-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  width: 128px;
+  margin-top: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-menu);
+}
+
+.locale-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.locale-item:hover {
+  background: var(--color-page);
+}
+
+/* 当前选中语言加粗以示区分。 */
+.locale-item--active {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.locale-radio {
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+/* ============================ 表单字段 ============================ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-field);
+}
+
+/* 链接格式一行：标签与下拉框的间距略大，与设计稿保持一致。 */
+.field--format {
+  gap: 10px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.field-control {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 14px;
+  transition: border-color 0.15s ease;
+}
+
+.field-control:hover {
+  border-color: var(--color-border-hover);
+}
+
+.field-control:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+select.field-control {
+  cursor: pointer;
+}
+
+/* ============================ 按钮 ============================ */
+
+.copy-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.copy-btn:hover {
+  background: var(--color-primary-hover);
+}
+
+.copy-btn:active {
+  background: var(--color-primary-active);
+  transform: scale(0.98);
+}
+
+.copy-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 3px #10b981;
+}
+
+/* ============================ 状态与预览 ============================ */
+
+.status {
+  font-size: 12px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.status-success {
+  color: var(--color-success);
+}
+
+.status-error {
+  color: var(--color-error);
+}
+
+.status-warning {
+  color: var(--color-warning);
+}
+
+.preview {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.625;
+  color: var(--color-text-body);
+  word-break: break-all;
+}
+
+/*
+ * 显示/隐藏开关。
+ *
+ * 状态提示、预览、语言菜单都由 JS 切换这个类，因此放在最后并提高优先级，
+ * 避免被上面的 display 规则覆盖。
+ */
+.hidden {
+  display: none !important;
+}

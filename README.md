@@ -56,15 +56,15 @@ npm run test:watch
 npm run format
 ```
 
-| 命令                 | 作用                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `npm run dev`        | Vite 开发服务器，改代码即时热更新                                                  |
-| `npm run build`      | 打包到 `dist/`，同时复制 `src/public/` 下的 manifest 和图标                        |
-| `npm run package`    | 构建后把 `dist/` 压成 `release/copy-markdown-link-<version>.zip`，可直接上传商店   |
-| `npm run typecheck`  | 只做类型检查（含 `tests/`、`vite.config.ts`），适合提交前跑一遍                    |
-| `npm test`           | Vitest 跑一次全部单元测试                                                          |
-| `npm run test:watch` | Vitest 监听模式，改代码自动重跑                                                    |
-| `npm run format`     | 按 `.prettierrc` + `.prettierignore` 统一格式（含 import 排序、Tailwind 类名排序） |
+| 命令                 | 作用                                                                             |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`        | Vite 开发服务器，改代码即时热更新                                                |
+| `npm run build`      | 打包到 `dist/`，同时复制 `src/public/` 下的 manifest 和图标                      |
+| `npm run package`    | 构建后把 `dist/` 压成 `release/copy-markdown-link-<version>.zip`，可直接上传商店 |
+| `npm run typecheck`  | 只做类型检查（含 `tests/`、`vite.config.ts`），适合提交前跑一遍                  |
+| `npm test`           | Vitest 跑一次全部单元测试                                                        |
+| `npm run test:watch` | Vitest 监听模式，改代码自动重跑                                                  |
+| `npm run format`     | 按 `.prettierrc` + `.prettierignore` 统一格式（含 import 自动排序）              |
 
 ### 持续集成
 
@@ -132,7 +132,7 @@ copy-markdown-link/
 │   ├── popup/
 │   │   ├── popup.html           # 弹窗页面（静态文案用 data-i18n 标记）
 │   │   ├── popup.ts             # 弹窗入口，创建并启动 PopupApp
-│   │   ├── popup.css            # 引入 Tailwind
+│   │   ├── popup.css            # 原生 CSS：设计变量 + 组件样式
 │   │   └── ui/                  # 界面层：DOM 与交互
 │   │       ├── elements.ts      # 元素查询与缓存
 │   │       ├── localize.ts      # 把文案表写到 data-i18n / placeholder / aria-label
