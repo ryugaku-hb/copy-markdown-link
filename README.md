@@ -40,16 +40,40 @@ npm run build
 # 类型检查（tsc --noEmit，不产出文件）
 npm run typecheck
 
+# 运行单元测试（Vitest，跑一次）
+npm test
+
+# 测试监听模式，改代码自动重跑
+npm run test:watch
+
 # 用 Prettier 格式化整个项目
 npm run format
 ```
 
-| 命令                | 作用                                                                               |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| `npm run dev`       | Vite 开发服务器，改代码即时热更新                                                  |
-| `npm run build`     | 打包到 `dist/`，同时复制 `src/public/` 下的 manifest 和图标                        |
-| `npm run typecheck` | 只做类型检查，适合提交前跑一遍                                                     |
-| `npm run format`    | 按 `.prettierrc` + `.prettierignore` 统一格式（含 import 排序、Tailwind 类名排序） |
+| 命令                 | 作用                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `npm run dev`        | Vite 开发服务器，改代码即时热更新                                                  |
+| `npm run build`      | 打包到 `dist/`，同时复制 `src/public/` 下的 manifest 和图标                        |
+| `npm run typecheck`  | 只做类型检查（含 `tests/`），适合提交前跑一遍                                      |
+| `npm test`           | Vitest 跑一次全部单元测试                                                          |
+| `npm run test:watch` | Vitest 监听模式，改代码自动重跑                                                    |
+| `npm run format`     | 按 `.prettierrc` + `.prettierignore` 统一格式（含 import 排序、Tailwind 类名排序） |
+
+### 测试范围
+
+`tests/` 覆盖了 `domain` 与 `services` 两层，浏览器能力用 `vi.stubGlobal` 打桩：
+
+| 测试文件              | 覆盖内容                                                      |
+| --------------------- | ------------------------------------------------------------- |
+| `linkFormat.test.ts`  | 5 种格式输出、Markdown/HTML 转义边界、`isLinkFormat` 含原型键 |
+| `i18n.test.ts`        | 5 语言文案完整性与占位符一致性、`t()` 插值、语言/文案键守卫   |
+| `errors.test.ts`      | 5 个错误码 × 5 语言可翻译、无残留占位符、普通 Error 兜底      |
+| `storage.test.ts`     | 默认值、逐项校验回退、读取失败兜底、写入失败抛 `AppError`     |
+| `currentPage.test.ts` | 标题压缩空白、空标题回退主机名、受保护页面抛错                |
+| `clipboard.test.ts`   | 写入成功/被拒、缺少 Clipboard API、非字符串参数               |
+| `settings.test.ts`    | 默认设置结构与取值                                            |
+
+UI 层（DOM 渲染、点击交互）暂未纳入自动测试，仍靠手动加载扩展验证。
 
 > **注意**：`npm run dev` 里的页面是普通网页环境，没有 `chrome.*` API，复制功能不可用，只能用来调弹窗的样式和布局。要测真实功能，请用下面的「加载未打包扩展」方式。
 
@@ -91,7 +115,16 @@ copy-markdown-link/
 │   └── public/
 │       ├── manifest.json        # 扩展清单（版本号在这里）
 │       └── icons/               # 16 / 32 / 48 / 128 px 图标
+├── tests/                       # Vitest 单元测试（domain + services）
+│   ├── linkFormat.test.ts       # 格式输出与转义边界
+│   ├── i18n.test.ts             # 五语言文案完整性
+│   ├── errors.test.ts           # 错误码 × 语言的翻译
+│   ├── storage.test.ts          # 设置读写、校验与失败兜底
+│   ├── currentPage.test.ts      # 标签页信息与标题规整
+│   ├── clipboard.test.ts        # 剪贴板成功/失败分支
+│   └── settings.test.ts         # 默认设置
 ├── dist/                        # 构建产物（已 gitignore）
+├── vitest.config.ts             # 测试配置（node 环境 + @ 别名）
 ├── vite.config.ts               # 双入口（popup + background）、@ 路径别名
 ├── tsconfig.json                # strict 模式、@/* 路径映射
 └── package.json
