@@ -17,19 +17,6 @@ const STATUS_COLORS = {
   warning: "status-warning",
 } as const;
 
-/** 状态消息自动隐藏的定时器；连续调用时先清掉旧定时器，避免新消息被过早隐藏。 */
-let statusTimer: ReturnType<typeof setTimeout> | undefined;
-
-/**
- * 显示状态信息时的可选配置。
- */
-interface ShowStatusOptions {
-  /** 是否自动隐藏，默认 `true`。 */
-  autoHide?: boolean;
-  /** 自动隐藏前的显示时长（毫秒），默认 3000。 */
-  duration?: number;
-}
-
 /**
  * 反馈展示器，统一管理状态提示与预览区域。
  */
@@ -37,68 +24,32 @@ export const feedback = {
   /**
    * 显示状态信息。
    *
-   * 未传 `options` 时默认显示 3000ms 后自动隐藏；重复调用会重置计时器，
-   * 因此新消息不会被上一条的定时器提前清掉。
+   * 提示会一直保留到下一条提示或显式调用 `hideStatus()`，
+   * 不自动消失，避免下方预览框因提示消失而上移。
    *
    * @param message - 要显示的状态文本。
    * @param type - 状态类型，决定文字颜色。
-   * @param options - 可选配置：传 `boolean` 表示是否自动隐藏，
-   * 传对象可额外指定隐藏时长。
    * @returns 无返回值。
    * @example
-   * feedback.showStatus("操作成功", "success");
-   * feedback.showStatus("警告信息", "warning", false);
-   * feedback.showStatus("错误信息", "error", { duration: 5000 });
+   * feedback.showStatus("已复制到剪贴板 ✓", "success");
    */
-  showStatus(
-    message: string,
-    type: StatusType,
-    options?: ShowStatusOptions | boolean,
-  ): void {
-    // 解析选项：未传时默认 3 秒后自动隐藏。
-    let shouldAutoHide = true;
-    let displayDuration = 3000;
-
-    if (typeof options === "object") {
-      shouldAutoHide = options.autoHide ?? true;
-      displayDuration = options.duration ?? 3000;
-    } else if (typeof options === "boolean") {
-      shouldAutoHide = options;
-    }
-
-    // 取消上一条消息的自动隐藏，避免旧定时器把这次的新消息提前清掉。
-    if (statusTimer !== undefined) {
-      clearTimeout(statusTimer);
-      statusTimer = undefined;
-    }
-
-    // 先移除旧样式（含 hidden 与所有颜色类），再添加新的颜色类。
+  showStatus(message: string, type: StatusType): void {
+    // 先移除隐藏态与所有颜色类，再添加新的颜色类。
     elements.status.classList.remove("hidden", ...Object.values(STATUS_COLORS));
     elements.status.classList.add(STATUS_COLORS[type]);
     elements.status.textContent = message;
-
-    if (shouldAutoHide) {
-      statusTimer = setTimeout(() => {
-        feedback.hideStatus();
-        statusTimer = undefined;
-      }, displayDuration);
-    }
   },
 
   /**
    * 隐藏状态信息。
    *
-   * 清空文本、加回 `hidden` 类，并取消尚未执行的自动隐藏定时器。
+   * 清空文本并加回 `hidden` 类，用于切换语言等需要重置界面的场景。
    *
    * @returns 无返回值。
    * @example
    * feedback.hideStatus();
    */
   hideStatus(): void {
-    if (statusTimer !== undefined) {
-      clearTimeout(statusTimer);
-      statusTimer = undefined;
-    }
     elements.status.classList.add("hidden");
     elements.status.textContent = "";
   },
