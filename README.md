@@ -1,5 +1,8 @@
 # Copy Markdown Link
 
+[![CI](https://github.com/ryugaku-hb/copy-markdown-link/actions/workflows/ci.yml/badge.svg)](https://github.com/ryugaku-hb/copy-markdown-link/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 一个 Chrome 扩展（Manifest V3）：把当前页面一键复制成 Markdown 链接，粘贴到笔记、文档、聊天窗口里即可。
 
 ## 1. 功能
