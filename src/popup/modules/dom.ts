@@ -13,6 +13,9 @@ const STATUS_COLORS = {
   warning: "text-yellow-500",
 } as const;
 
+/** 状态消息自动隐藏的定时器；连续调用时先清掉旧定时器，避免新消息被过早隐藏 */
+let statusTimer: ReturnType<typeof setTimeout> | undefined;
+
 /**
  * 显示状态信息的选项配置
  */
@@ -67,8 +70,8 @@ export const dom = {
     type: StatusType,
     options?: ShowStatusOptions | boolean,
   ) {
-    // 解析选项参数
-    let shouldAutoHide = false;
+    // 解析选项参数：未传 options 时默认 3 秒后自动隐藏（与上方文档一致）
+    let shouldAutoHide = true;
     let displayDuration = 3000;
 
     if (typeof options === "object") {
@@ -76,6 +79,12 @@ export const dom = {
       displayDuration = options.duration ?? 3000;
     } else if (typeof options === "boolean") {
       shouldAutoHide = options;
+    }
+
+    // 取消上一条状态消息的自动隐藏，避免旧定时器把这次的新消息提前清掉
+    if (statusTimer !== undefined) {
+      clearTimeout(statusTimer);
+      statusTimer = undefined;
     }
 
     // 移除旧的样式类（包括 hidden 和所有颜色类）
@@ -86,17 +95,22 @@ export const dom = {
 
     // 处理自动隐藏逻辑
     if (shouldAutoHide) {
-      setTimeout(() => {
+      statusTimer = setTimeout(() => {
         dom.hideStatus();
+        statusTimer = undefined;
       }, displayDuration);
     }
   },
 
   /**
    * 隐藏状态信息 \
-   * 清除文本内容并添加 hidden 类
+   * 清除文本内容并添加 hidden 类，同时取消待执行的自动隐藏定时器
    */
   hideStatus(): void {
+    if (statusTimer !== undefined) {
+      clearTimeout(statusTimer);
+      statusTimer = undefined;
+    }
     dom.status.classList.add("hidden");
     dom.status.textContent = "";
   },

@@ -50,7 +50,7 @@ export class PopupManager {
    * 渲染“链接格式”下拉框的选项 \
    * 遍历 `linkFormats` 配置，动态生成 `<option>` 元素
    */
-  private async renderFormatOptions() {
+  private renderFormatOptions() {
     // 清空现有选项（防止重复初始化）
     dom.formatSelect.innerHTML = "";
 
@@ -65,21 +65,16 @@ export class PopupManager {
 
   /**
    * 从存储加载并恢复用户设置 \
-   * 使用并行读取优化性能，减少等待时间
+   * 一次读取整份设置（storage 内部只发一次 chrome.storage 请求）
    */
   private async loadSettings() {
     try {
-      // 并行获取所有配置项
-      const [prefix, suffix, savedFormat] = await Promise.all([
-        storage.getPrefix(),
-        storage.getSuffix(),
-        storage.getLinkFormat(),
-      ]);
+      const settings = await storage.getSettings();
 
       // 批量更新 UI 状态
-      dom.prefixInput.value = prefix;
-      dom.suffixInput.value = suffix;
-      dom.formatSelect.value = savedFormat;
+      dom.prefixInput.value = settings.prefix;
+      dom.suffixInput.value = settings.suffix;
+      dom.formatSelect.value = settings.linkFormat;
     } catch (error) {
       console.error("加载用户设置失败:", error);
     }
@@ -111,11 +106,8 @@ export class PopupManager {
       }
 
       // 持久化保存配置 (懒保存策略：仅在点击复制时保存)
-      await Promise.all([
-        storage.setPrefix(prefix),
-        storage.setSuffix(suffix),
-        storage.setLinkFormat(format),
-      ]);
+      // 一次写入三项设置，storage 内部只发一次 chrome.storage 请求
+      await storage.saveSettings({ prefix, suffix, linkFormat: format });
 
       // 获取当前活动标签页的标题和 URL
       const { title, url } = await getCurrentTabInfo();

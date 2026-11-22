@@ -1,6 +1,6 @@
 /**
  * 存储管理模块 \
- * 负责管理扩展的本地存储配置，使用泛型实现通用的存取逻辑
+ * 一次性读写整份设置，减少 chrome.storage 往返次数
  */
 
 import {
@@ -9,130 +9,78 @@ import {
   LinkFormatType,
 } from "./linkFormat";
 
-/** 存储键名常量，统一管理 Key 防止拼写错误 */
-const STORAGE_KEYS = {
-  LINK_FORMAT: "linkFormat",
-  PREFIX: "prefix",
-  SUFFIX: "suffix",
-} as const;
-
-/** 默认前缀值 */
-const DEFAULT_PREFIX = "";
-/** 默认后缀值 */
-const DEFAULT_SUFFIX = "";
-
 /**
- * 通用内部处理函数：保存任意类型的配置
- * @template T - 配置值的类型
- * @param key - 存储键名，用于在 `chrome.storage` 中定位数据
- * @param value - 要保存的配置值，可以是字符串、数字、对象等任意类型
- * @throws 如果保存失败，抛出包含错误信息的 Error
- * @returns 保存操作完成后的 Promise
+ * 设置项结构
  */
-async function _setConfig<T>(key: string, value: T): Promise<void> {
-  try {
-    await chrome.storage.local.set({ [key]: value });
-  } catch (error: unknown) {
-    throw new Error(`保存配置 ${key} 失败`);
-  }
+export interface Settings {
+  /** 链接前缀 */
+  prefix: string;
+  /** 链接后缀 */
+  suffix: string;
+  /** 链接格式 */
+  linkFormat: LinkFormatType;
 }
 
-/**
- * 通用内部处理函数：获取配置并进行类型校验 \
- * 从存储中读取数据，如果数据不存在或校验失败，则返回默认值
- * @template T - 配置值的类型
- * @param key - 存储键名
- * @param defaultValue - 当存储中无数据或数据校验失败时返回的默认值
- * @param validator - 校验函数，接收存储中的原始值，返回布尔值表示数据是否合法
- * @returns 解析并校验后的配置值 Promise
- */
-async function _getConfig<T>(
-  key: string,
-  defaultValue: T,
-  validator: (val: unknown) => boolean,
-): Promise<T> {
-  try {
-    const result = await chrome.storage.local.get(key);
-    const value = result[key];
-
-    // 使用传入的校验函数验证数据，通过则返回数据，否则返回默认值
-    return validator(value) ? (value as T) : defaultValue;
-  } catch (error: unknown) {
-    console.error(`获取配置 ${key} 失败:`, error);
-    return defaultValue;
-  }
-}
+/** 默认设置，同时用作 `chrome.storage.local.get` 的默认值 */
+const DEFAULT_SETTINGS: Settings = {
+  prefix: "",
+  suffix: "",
+  linkFormat: DEFAULT_LINK_FORMAT,
+};
 
 /**
  * 存储管理器 \
- * 对外暴露的配置管理接口
+ * 对外暴露整份设置的读取与保存
  */
 export const storage = {
-  // --- 前缀相关 ---
-
   /**
-   * 获取存储中的前缀设置
-   * @returns 前缀文本字符串，如果未设置则返回空字符串
-   */
-  getPrefix(): Promise<string> {
-    return _getConfig(
-      STORAGE_KEYS.PREFIX,
-      DEFAULT_PREFIX,
-      (val): val is string => typeof val === "string",
-    );
-  },
-  /**
-   * 保存前缀设置到本地存储
-   * @param prefix - 要保存的前缀文本
-   * @returns 保存操作完成后的 Promise
-   */
-  setPrefix(prefix: string): Promise<void> {
-    return _setConfig(STORAGE_KEYS.PREFIX, prefix);
-  },
-
-  // --- 后缀相关 ---
-
-  /**
-   * 获取存储中的后缀设置
-   * @returns 后缀文本字符串，如果未设置则返回空字符串
-   */
-  getSuffix(): Promise<string> {
-    return _getConfig(
-      STORAGE_KEYS.SUFFIX,
-      DEFAULT_SUFFIX,
-      (val): val is string => typeof val === "string",
-    );
-  },
-  /**
-   * 保存后缀设置到本地存储
-   * @param suffix - 要保存的后缀文本
-   * @returns 保存操作完成后的 Promise
-   */
-  setSuffix(suffix: string): Promise<void> {
-    return _setConfig(STORAGE_KEYS.SUFFIX, suffix);
-  },
-
-  // --- 链接格式相关 ---
-
-  /**
-   * 获取存储中的链接格式设置 \
-   * 如果存储中不存在该设置，或数据校验失败（不再是合法的 `LinkFormatType`），则返回默认格式
-   * @returns 存储的链接格式类型，默认为 `"markdown"`
-   */
-  async getLinkFormat(): Promise<LinkFormatType> {
-    return _getConfig(
-      STORAGE_KEYS.LINK_FORMAT,
-      DEFAULT_LINK_FORMAT,
-      isLinkFormat,
-    );
-  },
-  /**
-   * 设置链接格式到本地存储
+   * 一次读取全部设置 \
+   * `chrome.storage.local.get` 支持传入默认值对象：缺失的键自动补上默认值，
+   * 因此一次 IPC 就能拿到完整设置（而不是每项各读一次）。
    *
-   * @param format - 要存储的链接格式类型，必须是合法的 `LinkFormatType`
-   * @returns 保存操作完成后的 Promise
+   * @returns 校验后的完整设置；读取失败时回退为默认设置
    */
-  async setLinkFormat(format: LinkFormatType): Promise<void> {
-    return _setConfig(STORAGE_KEYS.LINK_FORMAT, format);
+  async getSettings(): Promise<Settings> {
+    try {
+      // 传入对象字面量作为默认值：缺失的键由 chrome.storage 自动补齐
+      const stored = await chrome.storage.local.get({
+        prefix: DEFAULT_SETTINGS.prefix,
+        suffix: DEFAULT_SETTINGS.suffix,
+        linkFormat: DEFAULT_SETTINGS.linkFormat,
+      });
+
+      // 存储里的值可能被旧版本写入或被手动改动，逐项校验
+      return {
+        prefix:
+          typeof stored.prefix === "string"
+            ? stored.prefix
+            : DEFAULT_SETTINGS.prefix,
+        suffix:
+          typeof stored.suffix === "string"
+            ? stored.suffix
+            : DEFAULT_SETTINGS.suffix,
+        linkFormat: isLinkFormat(stored.linkFormat)
+          ? stored.linkFormat
+          : DEFAULT_LINK_FORMAT,
+      };
+    } catch (error: unknown) {
+      console.error("读取设置失败，使用默认设置:", error);
+      return { ...DEFAULT_SETTINGS };
+    }
+  },
+
+  /**
+   * 一次写入全部设置
+   *
+   * @param settings - 完整设置对象
+   * @throws {Error} 写入失败时抛出，调用方负责提示用户
+   */
+  async saveSettings(settings: Settings): Promise<void> {
+    try {
+      await chrome.storage.local.set(settings);
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : String(error);
+      throw new Error(`保存设置失败：${detail}`);
+    }
   },
 };

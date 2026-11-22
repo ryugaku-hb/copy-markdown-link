@@ -1,66 +1,69 @@
 /**
  * 标签页信息获取模块 \
- * 提供获取当前活动标签页信息的功能
+ * 依赖 activeTab 权限直接读取当前标签页的标题和 URL
  */
 
 /**
  * 标签页信息接口
  */
 interface TabInfo {
-  /** 页面标题 */
+  /** 页面标题（已规整为单行文本） */
   title: string;
   /** 页面 URL */
   url: string;
 }
 
 /**
- * 获取当前活动标签页的信息（标题和 URL）
+ * 获取当前活动标签页的标题和 URL
+ *
+ * 用户点击扩展图标时，activeTab 权限会授予当前标签页临时的 host 权限，
+ * 此时 `chrome.tabs.query` 返回的 `tab.title` / `tab.url` 对本标签页可见。
+ * 因此不需要注入脚本，也就不再需要 `scripting` 权限（权限面更小、少一次 IPC）。
  *
  * @returns 包含标题和 URL 的对象
- * @throws {Error} 当没有活动标签页、URL 不可访问或脚本注入失败时抛出
+ * @throws {Error} 当没有活动标签页，或页面受保护导致 URL 不可读时抛出
  * @example
  * try {
  *   const info = await getCurrentTabInfo();
  *   console.log(info.title);
  * } catch (err) {
- *   console.error("获取失败", err.message);
+ *   console.error("获取失败", err);
  * }
  */
 export async function getCurrentTabInfo(): Promise<TabInfo> {
   // 查询当前窗口中处于激活状态的标签页
-  const tabs: chrome.tabs.Tab[] = await chrome.tabs.query({
+  const [tab] = await chrome.tabs.query({
     active: true, // 标签页在它所在的窗口中是否处于激活状态
     currentWindow: true, // 标签页是否位于当前窗口
   });
 
-  // 获取第一个（也是唯一一个）活动标签页的 ID
-  const activeTab = tabs[0];
-  const tabId = activeTab?.id;
-
-  if (!tabId) {
-    throw new Error("当前没有活动的标签页");
+  // 受保护页面（chrome://、扩展商店、PDF 查看器等）不会暴露 url，
+  // activeTab 授权也不覆盖这些页面
+  if (!tab?.url) {
+    throw new Error("无法读取当前标签页，可能是受保护的页面");
   }
 
-  // 检查标签页是否可以访问（例如某些特殊页面如 chrome://）
-  if (!activeTab.url || activeTab.url.startsWith("chrome://")) {
-    throw new Error("无法访问当前标签页的内容");
-  }
+  return {
+    title: normalizeTitle(tab.title, tab.url),
+    url: tab.url,
+  };
+}
 
-  // 注入脚本以获取页面的标题和 URL
-  const results: chrome.scripting.InjectionResult<TabInfo>[] =
-    await chrome.scripting.executeScript({
-      target: { tabId }, // 指定要注入脚本的标签页
-      // 要注入并执行的 JavaScript 函数
-      func: () => ({
-        title: document.title,
-        url: location.href,
-      }),
-    });
+/**
+ * 规整页面标题 \
+ * 压缩连续空白（换行、制表符等）并去掉首尾空格；标题为空时回退到主机名
+ *
+ * @param rawTitle - `tab.title`，可能包含换行或为空
+ * @param url - 页面 URL，用于回退生成标题
+ * @returns 适合直接拼进链接的标题文本
+ */
+function normalizeTitle(rawTitle: string | undefined, url: string): string {
+  const title = (rawTitle ?? "").replace(/\s+/g, " ").trim();
+  if (title) return title;
 
-  // 处理注入脚本的结果
-  const firstResult = results[0];
-  if (!firstResult?.result) {
-    throw new Error("脚本注入失败，无法获取标签页信息");
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
   }
-  return firstResult.result; // 返回脚本执行后的结果
 }
