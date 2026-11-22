@@ -92,7 +92,6 @@ UI 层（DOM 渲染、点击交互）暂未纳入自动测试，仍靠手动加�
 ```
 copy-markdown-link/
 ├── src/
-│   ├── background.ts            # MV3 service worker（当前仅占位）
 │   ├── domain/                  # 纯逻辑层：不碰 DOM / chrome API，可直接单测
 │   │   ├── i18n.ts              # 五语言文案表、语言守卫与占位符插值
 │   │   ├── errors.ts            # AppError 错误码与按语言翻译
@@ -113,7 +112,7 @@ copy-markdown-link/
 │   │       ├── settingsForm.ts  # 语言与格式下拉框、前后缀表单的渲染与回读
 │   │       └── popupApp.ts      # 启动、切换语言与复制主流程编排
 │   └── public/
-│       ├── manifest.json        # 扩展清单（版本号在这里）
+│       ├── manifest.json        # 扩展清单（version 由构建从 package.json 注入）
 │       └── icons/               # 16 / 32 / 48 / 128 px 图标
 ├── tests/                       # Vitest 单元测试（domain + services）
 │   ├── linkFormat.test.ts       # 格式输出与转义边界
@@ -125,7 +124,7 @@ copy-markdown-link/
 │   └── settings.test.ts         # 默认设置
 ├── dist/                        # 构建产物（已 gitignore）
 ├── vitest.config.ts             # 测试配置（node 环境 + @ 别名）
-├── vite.config.ts               # 双入口（popup + background）、@ 路径别名
+├── vite.config.ts               # 单入口（popup）、构建时注入 manifest 版本、@ 路径别名
 ├── tsconfig.json                # strict 模式、@/* 路径映射
 └── package.json
 ```
@@ -161,7 +160,6 @@ copy-markdown-link/
 ## 8. 已知限制
 
 - `chrome://`、`edge://`、`about:`、扩展商店等受保护页面无法读取内容，会提示复制失败
-- 版本号需要同时维护 `package.json` 和 `src/public/manifest.json`
 - 前缀 / 后缀是在点击「复制链接」时写入存储的，改完直接关闭弹窗不会保存；界面语言则是切换即保存
 - 弹窗打开时会先渲染一份简体中文静态文本，脚本执行后立刻替换为已保存语言，非中文用户可能看到极短闪动
 
