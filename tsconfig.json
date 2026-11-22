@@ -92,8 +92,10 @@
     // ** 表示递归包含子目录
     "tests/**/*",
     // 包含测试文件，让 tsc 也检查测试代码
-    "vitest.config.ts"
+    "vitest.config.ts",
     // 测试配置同样纳入类型检查
+    "vite.config.ts"
+    // 构建配置同样纳入类型检查，避免配置里的逻辑出错却无人发现
   ],
 
   "exclude": [

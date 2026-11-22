@@ -1,0 +1,37 @@
+name: CI
+
+# 任何分支的 push 和所有 PR 都跑一遍，保证合进主干前四项检查全绿。
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    name: 类型检查 / 测试 / 格式 / 构建
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 用 ci 而不是 install，严格按 package-lock.json 装，避免版本漂移。
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 单元测试
+        run: npm test
+
+      # 格式检查放在构建前，失败时能更早定位问题。
+      - name: 格式检查
+        run: npx prettier --check .
+
+      - name: 构建
+        run: npm run build

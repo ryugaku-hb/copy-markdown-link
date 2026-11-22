@@ -18,7 +18,7 @@
 - **前缀 / 后缀**：给结果加固定装饰，例如前缀 `★ `、后缀 ` 🔗`
 - **五种界面语言**：简体中文（默认）、繁體中文、English、日本語、한국어。点弹窗右上角的地球图标（🌐）弹出语言菜单，选择后立即生效
 - **设置本地保存**：格式、前缀、后缀、界面语言存在 `chrome.storage.local`，不上传任何数据
-- **权限最小化**：只申请 `activeTab`，不申请全站读取权限
+- **权限最小化**：只用 `activeTab` 临时读取当前标签页的标题和 URL，不申请任何全站读取权限；另需 `clipboardWrite`（写剪贴板）和 `storage`（存设置）
 
 ## 2. 环境要求
 
@@ -37,6 +37,9 @@ npm run dev
 # 构建扩展，产物输出到 dist/
 npm run build
 
+# 构建并打包成可上传 Web Store 的 zip（输出到 release/）
+npm run package
+
 # 类型检查（tsc --noEmit，不产出文件）
 npm run typecheck
 
@@ -54,10 +57,19 @@ npm run format
 | -------------------- | ---------------------------------------------------------------------------------- |
 | `npm run dev`        | Vite 开发服务器，改代码即时热更新                                                  |
 | `npm run build`      | 打包到 `dist/`，同时复制 `src/public/` 下的 manifest 和图标                        |
-| `npm run typecheck`  | 只做类型检查（含 `tests/`），适合提交前跑一遍                                      |
+| `npm run package`    | 构建后把 `dist/` 压成 `release/copy-markdown-link-<version>.zip`，可直接上传商店   |
+| `npm run typecheck`  | 只做类型检查（含 `tests/`、`vite.config.ts`），适合提交前跑一遍                    |
 | `npm test`           | Vitest 跑一次全部单元测试                                                          |
 | `npm run test:watch` | Vitest 监听模式，改代码自动重跑                                                    |
 | `npm run format`     | 按 `.prettierrc` + `.prettierignore` 统一格式（含 import 排序、Tailwind 类名排序） |
+
+### 持续集成
+
+`.github/workflows/ci.yml` 会在每次 push 和每个 PR 上依次执行：`npm ci` → `npm run typecheck` → `npm test` → `npx prettier --check .` → `npm run build`。任一步失败即为红灯，不必靠本地记得手动跑。
+
+### 发布打包
+
+`npm run package` 会先构建，再用 `scripts/package.mjs` 把 `dist/` 打成 `release/copy-markdown-link-<version>.zip`。压缩包内 `manifest.json` 位于根目录（Web Store 的要求），版本号取自 `package.json`。`release/` 已加入 `.gitignore`。
 
 ### 测试范围
 
@@ -123,6 +135,9 @@ copy-markdown-link/
 │   ├── clipboard.test.ts        # 剪贴板成功/失败分支
 │   └── settings.test.ts         # 默认设置
 ├── dist/                        # 构建产物（已 gitignore）
+├── release/                     # 发布 zip（已 gitignore）
+├── scripts/package.mjs          # 把 dist 打成 Web Store 可上传的 zip
+├── .github/workflows/ci.yml     # 持续集成：类型检查 / 测试 / 格式 / 构建
 ├── vitest.config.ts             # 测试配置（node 环境 + @ 别名）
 ├── vite.config.ts               # 单入口（popup）、构建时注入 manifest 版本、@ 路径别名
 ├── tsconfig.json                # strict 模式、@/* 路径映射

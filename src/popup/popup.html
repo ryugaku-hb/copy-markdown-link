@@ -112,8 +112,14 @@
         复制链接
       </button>
 
-      <!-- 状态提示 -->
-      <div id="status" class="hidden text-center text-xs text-gray-500"></div>
+      <!-- 状态提示：role=status + aria-live 让读屏软件播报复制结果 -->
+      <div
+        id="status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        class="hidden text-center text-xs text-gray-500"
+      ></div>
 
       <!-- 复制内容预览 -->
       <div
